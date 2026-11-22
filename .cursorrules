@@ -1,0 +1,28 @@
+# Cursor rules for Prescription Explanation Tool
+
+Project: Next.js 14 App Router, TypeScript strict, Tailwind, Vercel AI SDK 4 with OpenRouter, zod, vitest.
+Source of truth: spec.md. Update its revision history when behaviour changes.
+
+Security
+- Secrets come from process.env in server code only (lib/env.ts). Never NEXT_PUBLIC_ for secrets.
+- Never log, echo or hard-code API keys.
+- Never log prescription text or chat content. Log counts, lengths, durations, error codes.
+
+API code
+- Validate input with zod schemas from lib/schema.ts before doing anything else (after the rate limit check).
+- Return errors as { error: { code, message } } using lib/errors.ts. Codes look like AI-400, AI-401, AI-429, AI-500, AI-502, AI-503, AI-504.
+- Use lib/logger.ts for logs (one JSON object per line).
+- Route handlers that call the model set `export const maxDuration = 30`.
+
+AI behaviour
+- System prompt lives in lib/prompt.ts. Keep it scoped to explaining prescriptions.
+- Tools expandSig and checkSafety wrap pure functions in lib/sig.ts and lib/safety.ts. Do not move logic into the route.
+
+Style
+- Functional React components, hooks, no class components.
+- Tailwind utility classes; keep the UI readable and printable.
+- Small pure functions with unit tests in tests/*.test.ts.
+- Prefer clear names over comments; comment the why, not the what.
+
+Before committing
+- npm run lint && npm run typecheck && npm test
