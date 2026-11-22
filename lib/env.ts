@@ -1,3 +1,5 @@
+import { parseReasoningSetting } from "./openrouter";
+
 // Server-side configuration. Only import this from route handlers.
 // Nothing here is NEXT_PUBLIC_, so Next.js never bundles it for the browser.
 
@@ -20,6 +22,7 @@ export function getConfig(env: Env = process.env) {
     apiKey: present(env.OPENROUTER_API_KEY) ? env.OPENROUTER_API_KEY!.trim() : undefined,
     model: present(env.OPENROUTER_MODEL) ? env.OPENROUTER_MODEL!.trim() : DEFAULT_MODEL,
     baseURL: present(env.OPENROUTER_BASE_URL) ? env.OPENROUTER_BASE_URL!.trim() : DEFAULT_BASE_URL,
+    reasoning: parseReasoningSetting(env.OPENROUTER_REASONING_EFFORT),
     rateLimitMax: positiveInt(env.RATE_LIMIT_MAX, 10),
     rateLimitWindowMs: positiveInt(env.RATE_LIMIT_WINDOW_MS, 60_000),
     siteUrl: env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${env.VERCEL_PROJECT_PRODUCTION_URL}` : "http://localhost:3000",

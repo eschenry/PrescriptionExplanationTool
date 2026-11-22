@@ -4,6 +4,7 @@ import { getConfig } from "@/lib/env";
 import { AppError, errorBody, HTTP_STATUS, toErrorCode, type ErrorCode } from "@/lib/errors";
 import { looksLikeInjection } from "@/lib/guard";
 import { createLogger, serializeError } from "@/lib/logger";
+import { createOpenRouterFetch } from "@/lib/openrouter";
 import { SYSTEM_PROMPT } from "@/lib/prompt";
 import { createRateLimiter } from "@/lib/rate-limit";
 import { getClientIp, hashIp, newRequestId } from "@/lib/request";
@@ -75,6 +76,7 @@ export async function POST(req: Request) {
     const injectionSuspected = looksLikeInjection(lastUser);
     log.info("chat.start", {
       model: config.model,
+      reasoning: config.reasoning,
       messageCount: messages.length,
       totalChars: messages.reduce((n, m) => n + m.content.length, 0),
       injectionSuspected,
@@ -84,6 +86,7 @@ export async function POST(req: Request) {
       apiKey: config.apiKey,
       baseURL: config.baseURL,
       compatibility: "compatible",
+      fetch: createOpenRouterFetch(config.reasoning),
       headers: { "HTTP-Referer": config.siteUrl, "X-Title": "Prescription Explanation Tool" },
     });
 
@@ -95,13 +98,16 @@ export async function POST(req: Request) {
       tools,
       maxSteps: 4,
       temperature: 0.2,
-      maxTokens: 1500,
+      maxTokens: 2500,
       abortSignal: AbortSignal.timeout(PROVIDER_TIMEOUT_MS),
       onError: ({ error }) => {
         log.error("chat.stream_error", { errorCode: toErrorCode(error), error: serializeError(error) });
       },
-      onFinish: ({ finishReason, usage, steps }) => {
-        log.info("chat.finish", {
+      onFinish: ({ finishReason, usage, steps, text }) => {
+        // "length" or an empty reply means the user saw an incomplete handout
+        const level = finishReason === "length" || text.trim().length === 0 ? "warn" : "info";
+        log[level]("chat.finish", {
+          textChars: text.length,
           finishReason,
           durationMs: Date.now() - started,
           promptTokens: usage.promptTokens,

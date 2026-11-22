@@ -2,8 +2,8 @@
 
 A small web app for GPs and family doctors. Paste (or upload) a prescription and it writes a plain-language handout for the patient: what each medicine is for, how and when to take it, common side effects and important warnings. The doctor reads it, asks for changes if needed ("simpler", "in Spanish", "she's 82"), then prints or copies it.
 
-**Live app:** _LIVE_URL_ (added after the first Vercel deploy)
-**Health check:** _LIVE_URL_/api/health
+**Live app:** https://prescription-explanation-tool.vercel.app
+**Health check:** https://prescription-explanation-tool.vercel.app/api/health
 
 ![CI](https://github.com/eschenry/PrescriptionExplanationTool/actions/workflows/ci.yml/badge.svg)
 
@@ -44,19 +44,20 @@ Open http://localhost:3000 and click **Load example**, then **Explain prescripti
 | `OPENROUTER_API_KEY` | Yes | | OpenRouter key. Server only. Never commit it. |
 | `OPENROUTER_MODEL` | No | `anthropic/claude-haiku-5.5` | Any OpenRouter model that supports tool calling. |
 | `OPENROUTER_BASE_URL` | No | `https://openrouter.ai/api/v1` | OpenRouter API endpoint. |
+| `OPENROUTER_REASONING_EFFORT` | No | `none` | Reasoning effort sent to OpenRouter. `none` keeps replies fast and stops hidden reasoning from using up the output budget. Set `default` (send nothing) or `low` if you switch to a model that cannot turn reasoning off. |
 | `RATE_LIMIT_MAX` | No | `10` | Requests allowed per window per IP. |
 | `RATE_LIMIT_WINDOW_MS` | No | `60000` | Window length in milliseconds. |
 
 ## Tests
 
 ```bash
-npm test           # 52 unit tests (vitest)
+npm test           # 58 unit tests (vitest)
 npm run lint
 npm run typecheck
 npm run build
 ```
 
-The tests cover the deterministic parts: abbreviation expansion, the safety list and interaction pairs, the rate limiter (with a fake clock), error-code mapping, the zod request schema, log redaction, the injection heuristic, the health booleans and IP hashing.
+The tests cover the deterministic parts: abbreviation expansion, the safety list and interaction pairs, the rate limiter (with a fake clock), error-code mapping, the zod request schema, log redaction, the injection heuristic, the health booleans, IP hashing and the OpenRouter reasoning setting.
 
 CI (`.github/workflows/ci.yml`) runs all of the above on every push and pull request, plus a **gitleaks** scan of the whole git history for committed keys.
 
@@ -90,6 +91,8 @@ Every error response carries an `x-request-id` header and a `requestId`, which y
 - **AI-503 on the live site.** The key is not set in Vercel, or it was added after the last deploy. Add it under Settings → Environment Variables (Production), then redeploy.
 - **AI-401.** The key is wrong, has no credit, or was revoked. Check it on https://openrouter.ai/settings/keys and update the Vercel variable.
 - **AI-502 straight away.** The model name in `OPENROUTER_MODEL` may not exist or may not support tools. Remove the variable to use the default.
+- **Handout cut short, or an empty reply.** Usually the model spent its output budget on hidden reasoning. Make sure `OPENROUTER_REASONING_EFFORT` is unset or `none`. Search the logs for `chat.finish` with `"level":"warn"`: `finishReason: "length"` or `textChars: 0` confirms it.
+- **AI-502 after changing the model.** Some models always reason and reject `effort: "none"`. Set `OPENROUTER_REASONING_EFFORT=default`.
 - **AI-429 while testing.** Wait a minute, or raise `RATE_LIMIT_MAX`. The limit is per server instance.
 - **`npm install` fails on a work laptop.** The company network may block the npm registry. Push to GitHub and let the CI workflow build and test it instead.
 - **Logs.** Vercel → project → **Logs**. Each line is JSON; filter by `requestId` or `msg` (`chat.start`, `chat.finish`, `chat.error`, `chat.rate_limited`).

@@ -58,10 +58,18 @@ function SafetyPanel({ result }: { result: SafetyResult }) {
 export default function Home() {
   const [uploadNote, setUploadNote] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [cutShort, setCutShort] = useState<"length" | "empty" | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
 
   const { messages, input, setInput, handleInputChange, handleSubmit, status, error, setMessages, stop, reload } =
-    useChat({ api: "/api/chat" });
+    useChat({
+      api: "/api/chat",
+      onResponse: () => setCutShort(null),
+      onFinish: (message, { finishReason }) => {
+        if (!message.content.trim()) setCutShort("empty");
+        else if (finishReason === "length") setCutShort("length");
+      },
+    });
 
   const busy = status === "submitted" || status === "streaming";
   const started = messages.length > 0;
@@ -99,6 +107,7 @@ export default function Home() {
 
   function startOver() {
     stop();
+    setCutShort(null);
     setMessages([]);
     setInput("");
     setUploadNote(null);
@@ -140,6 +149,8 @@ export default function Home() {
                 <div className="handout">
                   <ReactMarkdown>{m.content}</ReactMarkdown>
                 </div>
+              ) : isLatest && !busy ? (
+                <p className="text-sm text-slate-500">No text came back. Click Try again below.</p>
               ) : (
                 <p className="text-sm text-slate-500">Working on it...</p>
               )}
@@ -167,6 +178,19 @@ export default function Home() {
         })}
 
         {status === "submitted" && <p className="text-sm text-slate-500 print:hidden">Reading the prescription...</p>}
+
+        {cutShort && !busy && !errorCode && (
+          <div role="status" className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 print:hidden">
+            <p>
+              {cutShort === "length"
+                ? "This handout was cut short because it hit the length limit. Ask for a shorter version, or explain fewer medicines at a time."
+                : "The AI service returned an empty reply."}
+            </p>
+            <button type="button" onClick={() => reload()} className="mt-2 underline">
+              Try again
+            </button>
+          </div>
+        )}
 
         {errorCode && (
           <div role="alert" className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900 print:hidden">
