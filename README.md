@@ -105,6 +105,7 @@ Every error response carries an `x-request-id` header and a `requestId`, which y
 - [spec.md](spec.md) spec with revision history
 - [docs/04-demo-script.md](docs/04-demo-script.md) two-minute demo script
 - [docs/05-reflection-outline.md](docs/05-reflection-outline.md) reflection outline
+- [docs/06-reflection.md](docs/06-reflection.md) written reflection
 
 ## Limits
 
