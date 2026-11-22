@@ -51,13 +51,13 @@ Open http://localhost:3000 and click **Load example**, then **Explain prescripti
 ## Tests
 
 ```bash
-npm test           # 58 unit tests (vitest)
+npm test           # 65 unit tests (vitest)
 npm run lint
 npm run typecheck
 npm run build
 ```
 
-The tests cover the deterministic parts: abbreviation expansion, the safety list and interaction pairs, the rate limiter (with a fake clock), error-code mapping, the zod request schema, log redaction, the injection heuristic, the health booleans, IP hashing and the OpenRouter reasoning setting.
+The tests cover the deterministic parts: abbreviation expansion, the safety list and interaction pairs, the rate limiter (with a fake clock), error-code mapping, the zod request schema, log redaction, the injection heuristic, the health booleans, IP hashing and the OpenRouter reasoning setting, and how the handout text is picked out of a streamed message.
 
 CI (`.github/workflows/ci.yml`) runs all of the above on every push and pull request, plus a **gitleaks** scan of the whole git history for committed keys.
 

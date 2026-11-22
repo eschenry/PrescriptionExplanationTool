@@ -93,7 +93,8 @@ app/
   globals.css
 lib/
   sig.ts  safety.ts  rate-limit.ts  errors.ts  schema.ts
-  logger.ts  prompt.ts  env.ts  guard.ts
+  logger.ts  prompt.ts  env.ts  guard.ts  request.ts
+  openrouter.ts  message.ts
 tests/                   vitest unit tests for lib/
 .github/workflows/ci.yml lint, typecheck, test, build, gitleaks
 docs/                    validation, PRD, architecture, demo, reflection

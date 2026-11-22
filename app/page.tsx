@@ -4,6 +4,7 @@ import { useChat, type Message } from "@ai-sdk/react";
 import { useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import ReactMarkdown from "react-markdown";
 import { parseClientError, USER_MESSAGES } from "@/lib/errors";
+import { handoutText, preserveLineBreaks } from "@/lib/message";
 import type { SafetyResult } from "@/lib/safety";
 
 const MAX_UPLOAD_BYTES = 50 * 1024;
@@ -11,6 +12,10 @@ const MAX_UPLOAD_BYTES = 50 * 1024;
 const EXAMPLE = `Amoxicillin 500 mg capsules - 1 cap PO TID x7d (chest infection)
 Ibuprofen 400 mg tablets - 1 tab PO TID PRN pain, pc
 Warfarin 5 mg tablets - 1 tab PO daily (atrial fibrillation)`;
+
+function shownText(m: Message): string {
+  return handoutText(m.parts, m.content);
+}
 
 const DISCLAIMER = "Draft for clinician review. Check before giving to a patient.";
 
@@ -66,7 +71,7 @@ export default function Home() {
       api: "/api/chat",
       onResponse: () => setCutShort(null),
       onFinish: (message, { finishReason }) => {
-        if (!message.content.trim()) setCutShort("empty");
+        if (!shownText(message)) setCutShort("empty");
         else if (finishReason === "length") setCutShort("length");
       },
     });
@@ -100,7 +105,7 @@ export default function Home() {
   }
 
   async function copy(m: Message) {
-    await navigator.clipboard.writeText(m.content);
+    await navigator.clipboard.writeText(shownText(m));
     setCopiedId(m.id);
     setTimeout(() => setCopiedId(null), 1500);
   }
@@ -136,6 +141,7 @@ export default function Home() {
             );
           }
           const safety = safetyFrom(m);
+          const text = shownText(m);
           const isLatest = m.id === lastAssistantId;
           return (
             <article
@@ -145,9 +151,9 @@ export default function Home() {
               }`}
             >
               {safety && <SafetyPanel result={safety} />}
-              {m.content ? (
+              {text ? (
                 <div className="handout">
-                  <ReactMarkdown>{m.content}</ReactMarkdown>
+                  <ReactMarkdown>{preserveLineBreaks(text)}</ReactMarkdown>
                 </div>
               ) : isLatest && !busy ? (
                 <p className="text-sm text-slate-500">No text came back. Click Try again below.</p>
@@ -155,7 +161,7 @@ export default function Home() {
                 <p className="text-sm text-slate-500">Working on it...</p>
               )}
               <p className="mt-4 border-t border-slate-100 pt-2 text-xs text-slate-500">{DISCLAIMER}</p>
-              {isLatest && !busy && m.content && (
+              {isLatest && !busy && text && (
                 <div className="mt-3 flex gap-2 print:hidden">
                   <button
                     type="button"
