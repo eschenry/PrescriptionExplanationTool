@@ -1,0 +1,13 @@
+# Default gitleaks rules plus an explicit OpenRouter key pattern.
+[extend]
+useDefault = true
+
+[[rules]]
+id = "openrouter-api-key"
+description = "OpenRouter API key"
+regex = '''sk-or-(v1-)?[a-zA-Z0-9]{32,}'''
+keywords = ["sk-or-"]
+
+[allowlist]
+description = "Test fixtures use obviously fake keys"
+paths = ['''tests/.*\.test\.ts''']
