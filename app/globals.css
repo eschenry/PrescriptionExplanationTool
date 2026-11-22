@@ -1,0 +1,32 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Handout typography without pulling in the typography plugin */
+.handout h1 {
+  @apply mb-3 text-xl font-semibold;
+}
+.handout h2 {
+  @apply mb-1 mt-5 text-lg font-semibold text-teal-900;
+}
+.handout p {
+  @apply my-1.5 leading-relaxed;
+}
+.handout ul {
+  @apply my-2 list-disc pl-6;
+}
+.handout ol {
+  @apply my-2 list-decimal pl-6;
+}
+.handout li {
+  @apply my-0.5;
+}
+.handout strong {
+  @apply font-semibold;
+}
+
+@media print {
+  @page {
+    margin: 18mm;
+  }
+}
