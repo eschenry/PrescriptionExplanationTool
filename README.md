@@ -2,8 +2,9 @@
 
 A small web app for GPs and family doctors. Paste (or upload) a prescription and it writes a plain-language handout for the patient: what each medicine is for, how and when to take it, common side effects and important warnings. The doctor reads it, asks for changes if needed ("simpler", "in Spanish", "she's 82"), then prints or copies it.
 
-**Live app:** https://prescription-explanation-tool.vercel.app
-**Health check:** https://prescription-explanation-tool.vercel.app/api/health
+- **Live app:** https://prescription-explanation-tool.vercel.app
+- **Health check:** https://prescription-explanation-tool.vercel.app/api/health
+- **Demo video (2 min):** [watch on GitHub](docs/Escalante_Rx-Explanation-Tool%202026-11-23%2009-39-58.mp4)
 
 ![CI](https://github.com/eschenry/PrescriptionExplanationTool/actions/workflows/ci.yml/badge.svg)
 
@@ -103,7 +104,7 @@ Every error response carries an `x-request-id` header and a `requestId`, which y
 - [docs/02-prd.md](docs/02-prd.md) one-page PRD
 - [docs/03-architecture.md](docs/03-architecture.md) architecture notes
 - [spec.md](spec.md) spec with revision history
-- [docs/04-demo-script.md](docs/04-demo-script.md) two-minute demo script
+- [docs/04-demo-script.md](docs/04-demo-script.md) two-minute demo script ([recorded demo](docs/Escalante_Rx-Explanation-Tool%202026-11-23%2009-39-58.mp4))
 - [docs/05-reflection-outline.md](docs/05-reflection-outline.md) reflection outline
 - [docs/06-reflection.md](docs/06-reflection.md) one-page reflection ([long version](docs/06-reflection-long.md))
 
