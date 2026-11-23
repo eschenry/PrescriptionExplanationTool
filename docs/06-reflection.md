@@ -4,32 +4,34 @@ Week 4, Graded Assignment 4.2 | eschenry | November 2026
 
 ## What I built and why
 
-A web app for GPs that turns a prescription into a plain-language handout: what each medicine is for, how and when to take it, side effects and warnings. The doctor reviews it, asks for changes if needed, then prints it. It is live at https://prescription-explanation-tool.vercel.app.
+It's a web app for GPs. You paste in a prescription and it writes a handout the patient can read at home: what each medicine is for, how and when to take it, side effects, and what to watch out for. The doctor reads it over, asks for changes if they want, and prints it. It's live at https://prescription-explanation-tool.vercel.app.
 
-Patients forget 40 to 80 percent of what they are told in a consultation (Kessels, 2003), and prescriptions usually get explained in the last rushed minutes. Pharmacy leaflets are long, generic and not tied to the patient in front of you.
+Patients forget a lot of what they're told in a consultation, somewhere between 40 and 80 percent according to Kessels (2003), and the prescription usually gets explained right at the end when everyone is already getting up. Pharmacy leaflets don't really fix that. They're long and they're written for everyone.
 
 <!-- Optional: add one or two sentences about a time you, or someone you know, came home unsure about a prescription. -->
 
 ## How validation changed the idea
 
-I first pictured something patients would use on their own. The stress test ended that. Once I wrote "the model gets a fact wrong" next to "this is medical information", there was no honest way to skip the clinician. The tool became clinician-only, with review as part of the workflow rather than a line at the bottom. The next real step would be a paper test with five GPs. If fewer than three would use it, or anyone spots a dangerous error, I would stop and rethink.
+At first I pictured patients using it on their own. The stress test put a stop to that. Once I'd written "the model gets a fact wrong" next to "this is medical information", I couldn't see an honest way to skip the doctor. So it's for clinicians only, and their review is part of how it works, not a line at the bottom. If I took it further, I'd show printed handouts to five GPs first. If fewer than three said they'd use it, or anyone found a dangerous mistake, I'd stop there.
 
-## Decisions I would defend
+## Decisions I'd defend
 
-- **Fixed facts come from code, not the model.** One tool expands shorthand like "TID x7d" from a lookup table. Another checks a short high-alert list. The warfarin warning shows in its own panel straight from the tool output, so it appears even if the model forgets it.
-- **Users see a short code, not a raw error** ("AI-429"). Details go to JSON logs that strip message content and keys.
-- **Spec review before code.** Going back over spec v0.1 found ten gaps, including an AI-504 timeout code with no timeout behind it.
+The main one: anything with a single right answer comes from code, not the model. One tool expands shorthand like "TID x7d" from a lookup table, and another checks a short list of high-alert drugs. The warfarin warning goes into its own panel straight from that check, so it shows up even if the model forgets it.
+
+I also kept errors boring for the user. They see a short message and a code like AI-429, and the details go into server logs that leave out the prescription text and the key.
+
+And I reviewed the spec before writing code. That found ten gaps, including an AI-504 timeout code I'd listed without ever setting a timeout.
 
 ## What live testing showed
 
-All 52 unit tests were green when I deployed, and two of the three live tests still failed. The first handout stopped mid-word ("unusual ble") and the follow-up came back empty. The raw stream showed `finishReason: "length"`: the model was spending its output budget on hidden reasoning. Turning reasoning off and raising the limit fixed both. Three smaller fixes followed (length, narration before tool calls, merged lines), each recorded in the spec revision history. The off-topic and injection tests passed first time, including an instruction hidden inside a prescription, which the model flagged to the doctor.
+All 52 unit tests passed when I deployed, and two of my three live tests still failed. The first handout stopped in the middle of a word ("unusual ble"), and the follow-up came back empty. Reading the raw stream showed `finishReason: "length"`. The model was using up its output budget on reasoning I couldn't see. Turning reasoning off and raising the limit fixed both. Three smaller fixes came after that, and they're all in the spec's revision history. The off-topic and injection tests passed first time. When I hid an instruction inside a prescription, the model ignored it and pointed it out to the doctor.
 
 ## Working with an AI assistant
 
-Claude Code did most of the building. I made the product decisions and checked its work, especially version choices and anything that read as medical advice. CLAUDE.md and the spec kept a long session consistent.
+Claude Code wrote most of the code. I made the product decisions and checked what it did, especially the package versions and anything that read like medical advice. Keeping the rules in CLAUDE.md and the spec stopped things from drifting over a long session.
 
-## What I learned and what comes next
+## What I learned and what's next
 
-Read the raw output, not just the screen. Unit tests covered my logic; only the live test covered the model, the provider and the streaming together, and that is where the problems were. Next I would add a fixed set of test prescriptions scored for accuracy, get a clinician to review the safety list, add photo and PDF upload (GitHub issue #1), and run a small pilot with GPs.
+Look at the raw output, not just the screen. My unit tests only checked my own logic. The live test was the first time the model, the provider and the streaming ran together, and that's where the problems turned up. Next I'd build a set of test prescriptions to score the output against, have a clinician go through the safety list, add photo and PDF upload (GitHub issue #1), and try it with a few GPs.
 
-A longer version of this reflection is in [06-reflection-long.md](06-reflection-long.md).
+There's a longer version of this in [06-reflection-long.md](06-reflection-long.md).
